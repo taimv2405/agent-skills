@@ -111,9 +111,11 @@ Keep the worktree and branch until comparison is complete. Remove them only
 on explicit request and only after the learner has preserved or chosen to
 discard the independent changes.
 
-Verify the exact worktree path before using `git worktree remove`. Never
-force-remove it or delete its directory directly. Delete the temporary branch
-only after the worktree has been removed and with the learner's approval.
+Verify the exact worktree path before using `git worktree remove`. Never delete
+its directory directly; `--force` is acceptable once the learner has chosen to
+discard the independent changes, since build artefacts always leave the
+worktree dirty. Delete the temporary branch only after the worktree has been
+removed and with the learner's approval.
 
 ## Checklist
 
