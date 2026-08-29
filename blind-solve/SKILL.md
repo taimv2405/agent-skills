@@ -1,6 +1,6 @@
 ---
 name: "blind-solve"
-description: "Create a blind, independent implementation of a learner's completed exercise in an isolated Git worktree, then compare both solutions for learning. Use only when the learner explicitly requests independent reimplementation rather than an upfront code review."
+description: "Create a blind, independent implementation of a learner's completed exercise in an isolated Git worktree, then compare both solutions for learning. Use only when the learner explicitly asks for a blind independent solution to compare against, rather than an upfront code review."
 ---
 
 # Independent reimplementation for learning
