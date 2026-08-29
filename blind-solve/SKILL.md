@@ -15,8 +15,8 @@ Obtain the exercise requirements, intended paths, constraints, and intended
 starter commit from the learner or from authoritative exercise instructions
 they explicitly identify. Default to the chapter files in `docs/` matching the
 exercise number. Images referenced by those files are part of the
-specification: Read the ones in the sections covering the exercise. Use these
-as the specification.
+specification: Read the chapter's theory images and every image in the
+exercise's own section. Use these as the specification.
 
 If the learner's solution has already been exposed in the active context,
 do not claim the implementation is blind. Ask the learner to start a fresh
@@ -36,10 +36,10 @@ names or the learner's implementation; ask when material scope is unclear.
 Leave the learner's main worktree untouched: do not stash, reset, modify it,
 or switch its branch.
 
-Confirm that the baseline represents the intended starter state. Create a
-unique branch and linked worktree at that exact commit, using an
+Create a unique branch and linked worktree at that exact commit, using an
 OS-appropriate temporary directory outside the repository. Verify that the
-branch name and path are not already in use.
+branch name and path are not already in use. Confirm that the baseline
+represents the intended starter state.
 
 ```bash
 git worktree add -b ai/independent-<unique-name> <temporary-path> <baseline-ref>
@@ -111,3 +111,28 @@ discard the independent changes.
 Verify the exact worktree path before using `git worktree remove`. Never
 force-remove it or delete its directory directly. Delete the temporary branch
 only after the worktree has been removed and with the learner's approval.
+
+## Checklist
+
+Before reporting, confirm each of these happened:
+
+- [ ] specification obtained, including every image it references
+- [ ] blindness declared honestly — if the context was already contaminated,
+      said so
+- [ ] baseline derived, and starter state verified inside the worktree
+- [ ] branch and path confirmed unused; main worktree never inspected or
+      modified
+- [ ] assumptions and a short plan stated before implementing
+- [ ] nothing copied from the learner's files; no secrets, servers, or
+      external writes
+- [ ] implementation validated (lint/build/tests as available); nothing
+      committed
+- [ ] changed paths and validation results recorded, then frozen — and not
+      revised after
+- [ ] learner's solution inspected only after the freeze; comparison targeted,
+      not a repo-wide diff
+- [ ] each difference classified; correctness fixes separated from style
+      preferences
+- [ ] closing summary covers all four: what went well, 1–3 improvements, a
+      weakness in the independent implementation, one follow-up exercise
+- [ ] worktree and branch retained unless removal was explicitly requested
