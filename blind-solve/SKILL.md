@@ -14,9 +14,12 @@ comparison, not an authoritative answer.
 Obtain the exercise requirements, intended paths, constraints, and intended
 starter commit from the learner or from authoritative exercise instructions
 they explicitly identify. Default to the chapter files in `docs/` matching the
-exercise number. Images referenced by those files are part of the
-specification: Read the chapter's theory images and every image in the
-exercise's own section. Use these as the specification.
+exercise number. On the first exercise taken from a chapter, read that chapter
+in full — its theory as well as the exercise section — including every image
+either references; the images are part of the specification, not decoration.
+For a later exercise from a chapter already in context, read only what is new:
+that exercise's own section and any images it references. Use these as the
+specification.
 
 If the learner's solution has already been exposed in the active context,
 do not claim the implementation is blind. Ask the learner to start a fresh
