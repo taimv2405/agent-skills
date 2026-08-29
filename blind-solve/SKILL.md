@@ -13,7 +13,10 @@ comparison, not an authoritative answer.
 
 Obtain the exercise requirements, intended paths, constraints, and intended
 starter commit from the learner or from authoritative exercise instructions
-they explicitly identify. Use these as the specification.
+they explicitly identify. Default to the chapter files in `docs/` matching the
+exercise number. Images referenced by those files are part of the
+specification: Read the ones in the sections covering the exercise. Use these
+as the specification.
 
 If the learner's solution has already been exposed in the active context,
 do not claim the implementation is blind. Ask the learner to start a fresh
