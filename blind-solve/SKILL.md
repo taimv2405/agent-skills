@@ -30,9 +30,11 @@ that reveals the learner's solution: no main-worktree status or diff,
 changed files, patches, stashes, or pasted code. In the main worktree, inspect
 only what is needed to identify the repository and baseline commit.
 
-Tracked starter files, tests, and public exercise instructions at the
-confirmed baseline are allowed. Do not infer requirements from changed file
-names or the learner's implementation; ask when material scope is unclear.
+Tracked starter files and tests at the confirmed baseline are allowed, as are
+the exercise instructions wherever they live — including untracked or ignored
+documentation in the main worktree, which carries no solution. Do not infer
+requirements from changed file names or the learner's implementation; ask when
+material scope is unclear.
 
 ## Isolation
 
