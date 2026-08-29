@@ -81,8 +81,8 @@ the intended paths, relevant tests, and relevant untracked files. Prefer a
 targeted side-by-side comparison; do not paste a repository-wide diff.
 
 Apply the same specification and quality criteria to both implementations.
-Do not assume the independent implementation is superior. Report weaknesses
-in either solution.
+Do not assume the independent implementation is superior; where the learner's
+choice is better, say so plainly. Report weaknesses in either solution.
 
 Classify each material difference as:
 
@@ -99,7 +99,7 @@ End with:
 
 - what the learner did well;
 - the 1–3 highest-value improvements;
-- any meaningful weakness in the independent implementation;
+- where the learner's solution is better than the independent one, and why;
 - one focused follow-up exercise.
 
 ## Cleanup
@@ -133,6 +133,6 @@ Before reporting, confirm each of these happened:
       not a repo-wide diff
 - [ ] each difference classified; correctness fixes separated from style
       preferences
-- [ ] closing summary covers all four: what went well, 1–3 improvements, a
-      weakness in the independent implementation, one follow-up exercise
+- [ ] closing summary covers all four: what went well, 1–3 improvements, where
+      the learner's solution is better, one follow-up exercise
 - [ ] worktree and branch retained unless removal was explicitly requested
