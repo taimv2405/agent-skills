@@ -20,10 +20,10 @@ Create standardized, semantic git commits using the Conventional Commits specifi
 ```
 <type>[optional scope]: <description>
 
-[optional body]
-
 [optional footer(s)]
 ```
+
+**Never write a body.** Subject line only, plus footers if needed.
 
 ## Commit Types
 
@@ -97,18 +97,10 @@ Analyze the diff to determine:
 ### 4. Execute Commit
 
 ```bash
-# Single line
 git commit -m "<type>[scope]: <description>"
 
-# Multi-line with body/footer
-git commit -m "$(cat <<'EOF'
-<type>[scope]: <description>
-
-<optional body>
-
-<optional footer>
-EOF
-)"
+# With footer
+git commit -m "<type>[scope]: <description>" -m "<footer>"
 ```
 
 ## Best Practices
