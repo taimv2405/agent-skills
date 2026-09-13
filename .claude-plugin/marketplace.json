@@ -1,0 +1,20 @@
+{
+  "name": "agent-skills",
+  "description": "Personal Claude Code skills.",
+  "owner": {
+    "name": "taimv2405"
+  },
+  "plugins": [
+    {
+      "name": "agent-skills",
+      "description": "Personal skills: blind independent exercise solutions and conventional-commit automation.",
+      "version": "1.0.0",
+      "author": {
+        "name": "taimv2405"
+      },
+      "source": "./",
+      "category": "development",
+      "homepage": "https://github.com/taimv2405/agent-skills"
+    }
+  ]
+}
