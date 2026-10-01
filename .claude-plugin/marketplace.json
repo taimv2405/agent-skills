@@ -7,8 +7,8 @@
   "plugins": [
     {
       "name": "agent-skills",
-      "description": "Personal skills: blind independent exercise solutions and conventional-commit automation.",
-      "version": "1.0.2",
+      "description": "Personal skills: blind independent exercise solutions, conventional-commit automation, and data-driven clone-app research.",
+      "version": "1.0.3",
       "author": {
         "name": "taimv2405"
       },
