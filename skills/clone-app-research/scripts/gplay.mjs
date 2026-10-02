@@ -5,6 +5,7 @@ import gplay from 'google-play-scraper';
 const country = process.env.GP_COUNTRY || 'vn';
 const lang = process.env.GP_LANG || 'vi';
 const GIANTS = /\b(Google|Meta|Facebook|Instagram|WhatsApp|Microsoft|Apple|Amazon|ByteDance|TikTok|Lemon Inc|OpenAI|Samsung|Tencent|Alibaba|Netflix|Spotify|Snap|X Corp|Adobe|Telegram|Zalo|VNG|Shopee|Grab|Lazada|MoMo|Viettel|VNPT|MobiFone|Garena)\b/i;
+const PRICING = /quảng cáo|\bads?\b|premium|\bvip\b|trả phí|mất phí|tính phí|đắt|subscription|gói cước|nạp tiền/i;
 const REQUEST = /thêm|mong|giá mà|giá như|ước gì|nên có|cần có|không có|chưa có|thiếu|bổ sung|hy vọng|hi vọng|đề xuất|góp ý|please add|wish|would be nice|should have|feature request|missing|add an option/i;
 
 const [cmd, arg, n] = process.argv.slice(2);
@@ -34,10 +35,13 @@ if (cmd === 'top') {
   console.log(`${arg}: ${data.length} review mới nhất | ${dist}`);
   const line = r => console.log(`- ${r.score}★ ${r.thumbsUp}👍 ${new Date(r.date).toISOString().slice(0, 10)} | ${cut(r.text, 250)}`);
   const byThumbs = (a, b) => b.thumbsUp - a.thumbsUp;
-  const requests = data.filter(r => REQUEST.test(r.text || '')).sort(byThumbs);
+  const pricing = data.filter(r => r.score <= 3 && PRICING.test(r.text || '')).sort(byThumbs);
+  const requests = data.filter(r => REQUEST.test(r.text || '') && !pricing.includes(r)).sort(byThumbs);
   console.log(`\n## Có ý xin/thiếu tính năng (${requests.length})`);
   requests.slice(0, 30).forEach(line);
-  const low = data.filter(r => r.score <= 2 && !requests.includes(r)).sort(byThumbs);
+  console.log(`\n## Than phiền quảng cáo/giá, không dùng làm điểm khác biệt (${pricing.length})`);
+  pricing.slice(0, 5).forEach(line);
+  const low = data.filter(r => r.score <= 2 && !requests.includes(r) && !pricing.includes(r)).sort(byThumbs);
   console.log(`\n## Review 1–2★ khác (${low.length})`);
   low.slice(0, 20).forEach(line);
 } else {
