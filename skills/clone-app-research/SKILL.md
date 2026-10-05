@@ -40,7 +40,7 @@ Mặc định giả định nhóm 5 người, có dùng agent AI để code, nê
 Thư mục skill là "Base directory for this skill", hiện ra khi skill được nạp. Nếu `scripts/node_modules` chưa có (lần đầu hoặc sau khi plugin cập nhật) thì chạy `npm ci --prefix <thư mục skill>/scripts` trước. Các script dùng thư viện google-play-scraper. Mặc định thị trường VN, tiếng Việt. Đặt `GP_COUNTRY=us GP_LANG=en` để xem thị trường US.
 
 **Quét toàn bộ:**
-- `node scripts/scan_all.mjs <out.json> [50]`: quét mọi category ứng dụng (trừ game, watch face, thư viện) × VN/US × top free/top grossing, lấy chi tiết từng app (lượt tải, số đánh giá, thể loại). Kết quả khoảng 4000 app, mất khoảng 5 phút. Nên chạy nền và ghi file vào scratchpad.
+- `node scripts/scan_all.mjs <out.json> [50] [--vn]`: quét mọi category ứng dụng (trừ game, watch face, thư viện) × VN/US × top free/top grossing, lấy chi tiết từng app (lượt tải, số đánh giá, thể loại). Kết quả khoảng 4000 app, mất khoảng 5 phút. Nên chạy nền và ghi file vào scratchpad. `--vn` chỉ quét thị trường VN; dùng với số 200 để lấy cả app tầm trung (khoảng 5000 app, 5–10 phút).
 - `node scripts/filter_scan.mjs <scan.json> [--min-installs 100000] [--min-ratings 2000] [--chunks N --out <dir>]`: lọc cơ học theo tiêu chí cố định, gồm loại cứng ngân hàng/nhà nước/phần cứng/thanh toán, không có trần lượt tải. In danh sách theo category. Dùng `--chunks` để chia thành N file giao cho subagent.
 
 **Từng app** (`node scripts/gplay.mjs <lệnh>`):
@@ -53,7 +53,7 @@ Thư mục skill là "Base directory for this skill", hiện ra khi skill đư�
 ## Bước 1: Quét toàn bộ, chưa chọn gì
 1. Chạy `scan_all.mjs`, rồi `filter_scan.mjs` với tiêu chí đã viết sẵn.
 2. **Phân loại từng app** còn lại (thường khoảng 2500 app) vào nhóm GIỮ hoặc một mã loại:
-   - **NOIDUNG:** giá trị nằm ở kho nội dung (phim, nhạc có bản quyền, truyện, tin, đề thi, khóa học).
+   - **NOIDUNG:** giá trị nằm ở kho nội dung mà nhóm phải tự sản xuất hoặc mua bản quyền (phim, nhạc có bản quyền, truyện, tin, đề thi, khóa học). Nếu nội dung do người dùng tự mang vào, hoặc lấy được hợp pháp từ nguồn công khai (RSS, public domain, file của người dùng), và giá trị nằm ở tính năng xử lý nội dung đó, thì **GIỮ**: đây thường là loại đề tài "tính năng là trọng tâm" mà user muốn.
    - **DOITAC:** marketplace, giao đồ, đặt xe, khách sạn, thương hiệu bán lẻ.
    - **PHANCUNG:** app đi kèm thiết bị.
    - **RAC:** tiện ích rác hoặc clone hàng loạt (cleaner, remote, đèn pin, prank, wallpaper, launcher, downloader, app chỉ bọc AI).
@@ -82,13 +82,18 @@ Với app lớn, một nỗi đau nhiều 👍 vẫn chưa đủ để người 
 ## Điểm dừng: user chọn loại app
 **Không làm Bước 3 trước khi user chọn.** Đào review sâu tốn công, và nếu hướng đã lệch ý user thì cả báo cáo vô ích.
 
-Trình cho user khoảng 8–12 loại app qua được Bước 2, dạng bảng:
-- loại app và 2–3 app tiêu biểu (kèm nguồn BXH, hạng);
-- cỡ lõi;
-- trả lời ngắn 3 câu ở Bước 2;
-- một câu về hướng có thể tạo khác biệt, ghi rõ đây mới là giả thuyết chưa đào review.
+**Người dùng không chọn được từ tên loại app.** Chỉ nhìn "quản lý chi tiêu" hay "tổ chức giải đấu" thì không hình dung được làm nó có gì hay, nên loại nào cũng trông "quá quen" hoặc "quá lạ". Vì vậy trước khi trình, đọc nhanh review của app tiêu biểu mỗi loại (`dump --sort helpful`, xem 15 review 1–3★ nhiều 👍 nhất) và trình mỗi loại dưới dạng **một câu chuyện cụ thể**:
+- ai đang khổ, khổ vì gì, kèm 1–2 câu trích review thật và số 👍;
+- bản clone làm gì, điểm khác biệt có thể là gì (ghi rõ là giả thuyết);
+- app tiêu biểu (kèm nguồn BXH, hạng), cỡ lõi, kênh tìm 10–50 người dùng đầu.
 
-Kèm phễu ở Bước 1 và đường dẫn file dữ liệu. Hỏi user chọn 2–3 loại để đào sâu, đồng thời hỏi ràng buộc còn thiếu (số người, thời gian, stack, yêu cầu của môn học). User được phép gạt hết và nêu chủ đề riêng; chủ đề đó đi tiếp Bước 3 như các loại khác.
+Trình 4–6 câu chuyện thay vì 8–12 dòng tên loại. Chọn câu chuyện thuộc các mảng khác nhau.
+
+**Khi user gạt hết, hỏi hình dạng app thay vì đưa thêm danh sách.** Dùng AskUserQuestion với 3–4 hình dạng cụ thể (vd: "nền tảng khóa học kiểu Udemy", "luyện đề", "luyện code kiểu LeetCode") để user chỉ ra thứ họ đang hình dung. Ghi lại từng tín hiệu user cho (thích gì, chê gì và vì sao) rồi ghép lại trước khi đề xuất vòng mới. Đưa danh sách mới liên tục mà không hỏi lý do sẽ trượt mãi.
+
+Kèm phễu ở Bước 1 và đường dẫn file dữ liệu. Hỏi user chọn 1–2 hướng để đào sâu, đồng thời hỏi ràng buộc còn thiếu (số người, thời gian, stack, yêu cầu của môn học, có bắt buộc phát hành lên store không). User được phép gạt hết và nêu chủ đề riêng; chủ đề đó đi tiếp Bước 3 như các loại khác.
+
+Nếu user muốn app tầm trung hoặc ngách, quét sâu thị trường VN: `scan_all.mjs <out.json> 200 --vn`, rồi lọc thêm app có nhiều đánh giá nhưng điểm sao thấp (dưới 4.0): đó là nơi người dùng đang khổ.
 
 ## Bước 3: Đào review các loại app user đã chọn
 **Mở rộng tập ứng viên trong từng loại.** App top chart thường đã phục vụ tốt nhu cầu phổ biến; nhu cầu chưa được đáp ứng hay nằm ở app tầm trung và ở người đang tìm app thay thế.
@@ -135,6 +140,7 @@ Nhiều người xin chưa đủ để thành điểm khác biệt. Mỗi chủ 
    - **Cấp 2 (đáng làm):** gọi tên được một phần kỹ thuật thật mà phần lớn dev phải học thêm mới làm được. Các nhóm thường gặp: đồng bộ dữ liệu và xử lý xung đột; realtime nhiều người; chạy nền hoặc theo vị trí; nhận dạng hoặc xử lý ảnh, âm thanh; thuật toán gợi ý, lập lịch hay tối ưu; tương tác sâu với hệ điều hành; ghép nhiều nguồn dữ liệu công khai; LLM có xử lý thêm (truy xuất trên dữ liệu của người dùng, thao tác được trên dữ liệu app, trích xuất có cấu trúc).
    - **Cấp 3 (quá sức):**
      - cần dữ liệu độc quyền, tự train mô hình lớn, phần cứng riêng, thanh toán thật hoặc vấn đề pháp lý;
+     - vi phạm điều khoản hoặc chính sách nền tảng (xem mục Rào cản nền tảng ở Bước 3b);
      - kiểm duyệt quy mô lớn;
      - **cần mật độ người dùng mới có giá trị** (báo cáo cộng đồng, feed, matching).
 
@@ -149,6 +155,7 @@ Nhiều người xin chưa đủ để thành điểm khác biệt. Mỗi chủ 
    - Trong 3–4 điểm khác biệt, tối đa 1 điểm được cần AI để hoạt động.
    - Điểm đó phải có đường lùi khi AI không dùng được: vẫn làm thủ công được, hoặc có cách không dùng AI cho kết quả kém hơn nhưng vẫn dùng được. Ghi rõ đường lùi.
    - Điểm chủ lực không được là điểm cần AI, trừ khi user đã chấp nhận app phụ thuộc AI.
+   - Phân biệt hai loại: mô hình chạy ngay trên máy (MediaPipe, Whisper on-device, ML Kit) không có dịch vụ ngoài để sập, không quota, không tốn tiền server; còn gọi API hay server GPU thì có. Nỗi lo "AI đứt là app đứt" chủ yếu nhắm vào loại thứ hai. Ghi rõ điểm khác biệt thuộc loại nào.
 7. **Giải thích được vì sao app gốc chưa làm.**
    - Khó hoặc tốn công → tốt.
    - Xung đột mô hình kinh doanh (vd: lưu cục bộ thì mất doanh thu từ gói cloud) → **điểm cộng cho khả năng có người dùng**, nhưng ghi rõ đây không phải điểm kỹ thuật.
@@ -163,9 +170,36 @@ Nhiều người xin chưa đủ để thành điểm khác biệt. Mỗi chủ 
 4. Độ mạnh của bằng chứng.
 5. Có demo được trong 2 phút không.
 
+## Bước 3b: Tìm điểm nổi bật "wow" từ nghiên cứu
+Điểm khác biệt đi từ review thường là cải tiến từng bước: đúng nhưng ai nghe cũng thấy "đã có người làm". Khi user muốn một điểm nổi bật khiến người xem phải "wow", làm thêm bước này sau Bước 3, trong đúng loại app đã chọn.
+
+**Sự thật cần nói với user trước:** một ý vừa dùng công nghệ chưa ai dùng, vừa làm được bằng thư viện có sẵn trong vài tháng, gần như không tồn tại. Thứ làm được là ý **hiếm**, **chưa có ở thị trường hoặc nền tảng của user** (vd: chỉ có bản web hoặc iOS ở nước ngoài, chưa có trên Android cho người Việt), và có **khoảnh khắc demo** rõ. Không hứa ý "chưa ai làm ở đâu cả".
+
+**Nguồn ý (tìm có hệ thống, không brainstorm từ trí nhớ):**
+1. **Nghiên cứu gần đây:** WebSearch bài báo 1–3 năm gần nhất (CHI, UIST, Interspeech, arXiv, MDPI…) về đúng nỗi đau đã có bằng chứng ở Bước 3. Tìm hệ thống mẫu đã chạy được nhưng chưa thành sản phẩm.
+2. **Năng lực mới của nền tảng và thư viện:** MediaPipe Tasks, ML Kit, model mã nguồn mở chạy trên máy hoặc server rẻ, API Android mới. Ghép với nỗi đau đã có bằng chứng, không ghép với nỗi đau tự nghĩ.
+3. **Tính năng đã có ở nơi khác:** web, iOS, desktop, thị trường khác, nhưng chưa có trên nền tảng hoặc thị trường của user.
+
+Chạy song song 5–8 WebSearch cho các hướng khác nhau trong cùng một lượt.
+
+**5 cửa lọc**, ghi kết quả từng ý vào một bảng (giữ / giữ có điều kiện / loại):
+1. **Wow:** người xem hiểu và phản ứng trong 10 giây demo. Viết câu giới thiệu không thuật ngữ.
+2. **Khả thi:** có thư viện hoặc model sẵn, chạy được trên máy tầm trung hoặc server rẻ. Kiểm tra giấy phép model (MIT/Apache dùng được; CC-BY-NC chỉ phi thương mại). Ý chỉ có ở mức nghiên cứu, phải tự dựng mô hình hoặc phần cứng thì loại. Ý mà bài báo làm trên thiết bị khác (webcam laptop, cảm biến chuyên dụng) thì nói rõ khoảng cách khi đưa lên điện thoại và cách thu nhỏ.
+3. **Rào cản nền tảng** (bắt buộc kiểm tra, đây là chỗ ý "nghe hay" hay chết):
+   - điều khoản của nguồn nội dung: YouTube cấm tải video/audio và API chỉ cho lấy phụ đề video của chính mình; nội dung có DRM chặn thu âm thanh;
+   - chính sách Play: AccessibilityService chỉ cho mục đích trợ năng; quyền vị trí nền, quyền đọc SMS hoặc thông báo cần giải trình; nội dung AI tạo ra phải có cơ chế báo cáo; dữ liệu sinh trắc (giọng, khuôn mặt) phải khai báo;
+   - phần cứng: tính năng chỉ chạy trên máy cao cấp (vd: Gemini Nano) không làm lõi được;
+   - chi phí server khi có người dùng thật.
+4. **Chưa có trên Play:** `search` trên Play với vài cách diễn đạt, kèm WebSearch. Có ở web/iOS nước ngoài thì vẫn giữ nhưng ghi rõ "đã có ở X, chưa có trên Android/VN". Đã có app Android làm tốt thì loại.
+5. **App vẫn chạy khi tính năng này lỗi:** ghi đường lùi.
+
+**Ý giữ có điều kiện** phải kèm một thử nghiệm đo được trong 1–2 tuần đầu (đo gì, trên máy nào, ngưỡng nào thì giữ). Ngưỡng chốt trước khi thử.
+
+**Xuất ra:** bảng lọc (kể cả ý đã loại và lý do, có link nguồn), 1 điểm chủ lực, 1 điểm thử thách nếu có, điểm phụ rẻ, và kế hoạch thử nghiệm. Gợi ý user phân mỗi điểm cho một thành viên sở hữu, và ghi lại số liệu đo cùng các phương án đã bỏ để dùng cho báo cáo và phỏng vấn.
+
 ## Bước 4: Lọc và đề xuất
 Áp ràng buộc của user, sau đó xuất ra:
-1. **Phễu:** số app quét, sau lọc cơ học, GIỮ, cỡ M/L, số loại app, các loại user chọn, số app đã đào review. Kèm tiêu chí lọc và đường dẫn file dữ liệu (scan, dump, themes) để user kiểm tra lại.
+1. **Phễu:** số app quét, sau lọc cơ học, GIỮ, cỡ M/L, số loại app, các loại user chọn, số app đã đào review. Kèm tiêu chí lọc và đường dẫn file dữ liệu (scan, dump, themes) để user kiểm tra lại. Nếu đã làm Bước 3b, kèm bảng lọc 5 cửa và kế hoạch thử nghiệm.
 2. **2–3 ứng viên** từ các loại app user đã chọn. Mỗi ứng viên gồm:
    - **App gốc:** tên, appId, link, lượt tải, số sao, cỡ lõi.
    - **Nguồn:** BXH nào, hạng mấy, hoặc tìm thấy từ đâu ở Bước 3.

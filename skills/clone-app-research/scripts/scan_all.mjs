@@ -1,13 +1,16 @@
 // Quét toàn bộ category ứng dụng (top free + grossing, VN + US), lấy chi tiết từng app, ghi ra JSON.
-// Usage: node scan_all.mjs <out.json> [numPerList=50]   (~4000 app, mất khoảng 5 phút)
+// Usage: node scan_all.mjs <out.json> [numPerList=50] [--vn]   (~4000 app, mất khoảng 5 phút)
+// --vn: chỉ quét thị trường VN; dùng với numPerList=200 để lấy cả app tầm trung.
 import gplay from 'google-play-scraper';
 import fs from 'fs';
 
-const out = process.argv[2] || 'scan.json';
-const num = Number(process.argv[3]) || 50;
+const args = process.argv.slice(2).filter(a => !a.startsWith('--'));
+const vnOnly = process.argv.includes('--vn');
+const out = args[0] || 'scan.json';
+const num = Number(args[1]) || 50;
 const SKIP = /^(GAME|FAMILY|APPLICATION|ANDROID_WEAR|LIBRARIES_AND_DEMO|WATCH_FACE)/;
 const cats = Object.keys(gplay.category).filter(c => !SKIP.test(c));
-const markets = [{ country: 'vn', lang: 'vi' }, { country: 'us', lang: 'en' }];
+const markets = vnOnly ? [{ country: 'vn', lang: 'vi' }] : [{ country: 'vn', lang: 'vi' }, { country: 'us', lang: 'en' }];
 const collections = ['TOP_FREE', 'GROSSING'];
 
 const seen = new Map(); // appId -> { appId, sources: [] }
