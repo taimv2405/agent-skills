@@ -1,13 +1,12 @@
 // Google Play helper for clone-app-research.
-// Usage: node gplay.mjs <top|search|similar|info|reviews|count> ... [--no-giants] [--sort newest|helpful]
+// Usage: node gplay.mjs <top|search|similar|info|dump|tally|count> ... [--no-giants] [--sort newest|helpful]
 // Country/lang default to vn/vi; override with GP_COUNTRY / GP_LANG env vars.
 import gplay from 'google-play-scraper';
+import fs from 'fs';
 
 const country = process.env.GP_COUNTRY || 'vn';
 const lang = process.env.GP_LANG || 'vi';
 const GIANTS = /\b(Google|Meta|Facebook|Instagram|WhatsApp|Microsoft|Apple|Amazon|ByteDance|TikTok|Lemon Inc|OpenAI|Samsung|Tencent|Alibaba|Netflix|Spotify|Snap|X Corp|Adobe|Telegram|Zalo|VNG|Shopee|Grab|Lazada|MoMo|Viettel|VNPT|MobiFone|Garena)\b/i;
-const PRICING = /quảng cáo|\bads?\b|premium|\bvip\b|trả phí|mất phí|tính phí|đắt|subscription|gói cước|nạp tiền|paywall|price|expensive|refund/i;
-const REQUEST = /thêm|mong|giá mà|giá như|ước gì|nên có|cần có|không có|chưa có|thiếu|bổ sung|hy vọng|hi vọng|đề xuất|góp ý|please add|wish|would be nice|should have|feature request|missing|add an option/i;
 
 const argv = process.argv.slice(2);
 const flags = new Set(argv.filter(a => a.startsWith('--') && !a.includes('=')));
@@ -51,21 +50,38 @@ if (cmd === 'top') {
     console.log(`${a.appId} | ${a.title} | ${a.developer} | ${a.installs} lượt tải | ${a.score?.toFixed(2)}★ (${a.ratings} đánh giá) | ${a.genre} | cập nhật ${new Date(a.updated).toISOString().slice(0, 10)} | ${a.url}`);
     console.log(`  ${cut(a.summary, 200)}`);
   }
-} else if (cmd === 'reviews') {
-  const data = await fetchReviews(arg, Number(n) || 2000);
+} else if (cmd === 'dump') {
+  // dump <appId> <out.txt> [num]: ghi review ra file, mỗi dòng "id|sao|👍|ngày|nội dung", để LLM đọc và gom chủ đề.
+  // Bỏ review quá ngắn không mang thông tin; review 4–5★ chỉ giữ khi đủ dài để có thể chứa góp ý.
+  const out = n;
+  const data = await fetchReviews(arg, Number(pos[3]) || 2000);
+  const keep = data.filter(r => {
+    const len = (r.text || '').trim().length;
+    return r.score <= 3 ? len >= 25 : len >= 80;
+  });
+  const rows = keep.map(r => `${r.id}|${r.score}|${r.thumbsUp}|${new Date(r.date).toISOString().slice(0, 10)}|${cut(r.text, 400)}`);
+  fs.writeFileSync(out, rows.join('\n'));
   const dist = [1, 2, 3, 4, 5].map(s => `${s}★:${data.filter(r => r.score === s).length}`).join(' ');
-  console.log(`${arg}: ${data.length} review (sort=${sortName}, ${span(data)}) | ${dist}`);
-  const pricing = data.filter(r => r.score <= 3 && PRICING.test(r.text || '')).sort(byThumbs);
-  const requests = data.filter(r => REQUEST.test(r.text || '') && !pricing.includes(r)).sort(byThumbs);
-  console.log(`\n## Có ý xin/thiếu tính năng (${requests.length})`);
-  requests.slice(0, 30).forEach(line);
-  console.log(`\n## Than phiền giá/quảng cáo/paywall: không phải điểm khác biệt kỹ thuật, dùng làm "lý do chuyển app" (${pricing.length})`);
-  pricing.slice(0, 15).forEach(line);
-  const low = data.filter(r => r.score <= 2 && !requests.includes(r) && !pricing.includes(r)).sort(byThumbs);
-  console.log(`\n## Review 1–2★ khác (${low.length})`);
-  low.slice(0, 20).forEach(line);
+  console.log(`${arg}: lấy ${data.length} review (sort=${sortName}, ${span(data)}) | ${dist}`);
+  console.log(`Ghi ${keep.length} review đủ thông tin vào ${out}`);
+} else if (cmd === 'tally') {
+  // tally <dump.txt> <themes.json>: themes.json = { "tên chủ đề": ["reviewId", ...] }. In số review và tổng 👍 thật của từng chủ đề.
+  const rows = new Map(fs.readFileSync(arg, 'utf8').split('\n').filter(Boolean).map(l => {
+    const [id, score, thumbs, date, ...text] = l.split('|');
+    return [id, { score: +score, thumbsUp: +thumbs, date, text: text.join('|') }];
+  }));
+  const themes = JSON.parse(fs.readFileSync(n, 'utf8'));
+  const res = Object.entries(themes).map(([name, ids]) => {
+    const hit = [...new Set(ids)].map(id => rows.get(id)).filter(Boolean).sort(byThumbs);
+    const missing = ids.filter(id => !rows.has(id)).length;
+    return { name, hit, missing, sum: hit.reduce((s, r) => s + r.thumbsUp, 0) };
+  }).sort((a, b) => b.sum - a.sum || b.hit.length - a.hit.length);
+  for (const t of res) {
+    console.log(`\n## ${t.name}: ${t.hit.length} review, tổng ${t.sum}👍${t.missing ? ` (bỏ ${t.missing} id không có trong file)` : ''}`);
+    t.hit.slice(0, 5).forEach(r => console.log(`- ${r.score}★ ${r.thumbsUp}👍 ${r.date} | ${cut(r.text, 250)}`));
+  }
 } else if (cmd === 'count') {
-  // count <appId> "<regex>" [num]: đếm review khớp một chủ đề và tổng 👍.
+  // count <appId> "<regex>" [num]: dò nhanh theo từ khóa. Chỉ để xem sơ bộ, không dùng làm số liệu bằng chứng.
   const re = new RegExp(n, 'i');
   const data = await fetchReviews(arg, Number(pos[3]) || 2000);
   const hit = data.filter(r => re.test(r.text || '')).sort(byThumbs);
@@ -73,6 +89,6 @@ if (cmd === 'top') {
   console.log(`${arg} /${n}/i: ${hit.length}/${data.length} review khớp, tổng ${sum}👍 (sort=${sortName}, ${span(data)})`);
   hit.slice(0, 15).forEach(line);
 } else {
-  console.log('Lệnh: top <CATEGORY> [num] | search "<từ khóa>" [num] | similar <appId> | info <appId...> | reviews <appId> [num] | count <appId> "<regex>" [num]');
-  console.log('Cờ: --no-giants (top/search/similar) | --sort newest|helpful (reviews/count)');
+  console.log('Lệnh: top <CATEGORY> [num] | search "<từ khóa>" [num] | similar <appId> | info <appId...> | dump <appId> <out.txt> [num] | tally <dump.txt> <themes.json> | count <appId> "<regex>" [num]');
+  console.log('Cờ: --no-giants (top/search/similar) | --sort newest|helpful (dump/count)');
 }
