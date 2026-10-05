@@ -1,7 +1,7 @@
 {
   "name": "agent-skills",
   "description": "Personal skills: blind independent exercise solutions, conventional-commit automation, data-driven clone-app research, and document-to-markdown conversion.",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "author": {
     "name": "taimv2405"
   }
