@@ -925,13 +925,15 @@ def drop_repeated_lines(md, min_pages=4, ratio=0.6):
 
 def drop_redundant_figs(md):
     """Ảnh thanh tiêu đề slide (se104_c1/c3/uml: ~73 khối "[Ảnh chữ/code] Tiêu đề…" lặp đúng heading ngay sau):
-    khối ảnh loại chữ/ảnh mà >= 90% số từ đã có trong phần chữ của trang -> bỏ. Không đụng ảnh giao diện/sơ đồ/biểu đồ."""
+    khối ảnh loại chữ/ảnh mà >= 90% số từ đã có trong phần chữ của trang -> bỏ; khối > 60 từ (vd bảng ESG se334 vừa là bảng docling vừa là 2 ảnh)
+    cần thêm >= 85% cặp từ liền kề đã có. Không đụng ảnh giao diện/sơ đồ/biểu đồ."""
     pages = re.split(r"(?=<!-- (?:trang|slide) )", md)
     out = []
     for pg in pages:
         lines = pg.split("\n")
         plain = " ".join(l for l in lines if not l.startswith(">"))
-        have = set(re.findall(r"\w+", nfc(plain).lower()))
+        pw = re.findall(r"\w+", nfc(plain).lower())
+        have, have_bi = set(pw), set(zip(pw, pw[1:]))
         res, i = [], 0
         while i < len(lines):
             l = lines[i]
@@ -944,8 +946,8 @@ def drop_redundant_figs(md):
                 if "" in blk and blk.index("") < len(blk) - 1:
                     blk = blk[blk.index("") + 1:]                # bỏ câu TÓM TẮT (lời tả của model), chỉ so phần chữ chép từ ảnh
                 words = re.findall(r"\w+", nfc(" ".join(blk)).lower())
-                if words and len(words) <= 60 and sum(w in have for w in words) >= 0.9 * len(words):
-                    i = j
+                if words and sum(w in have for w in words) >= 0.9 * len(words) and (len(words) <= 60 or sum(b in have_bi for b in zip(words, words[1:])) >= 0.85 * (len(words) - 1)):
+                    i = j                                        # khối dài (> 60 từ): thêm điều kiện cặp từ liền kề để không gỡ nhầm ảnh code dùng chung từ vựng
                     continue
             res.append(l); i += 1
         out.append("\n".join(res))
